@@ -3,6 +3,13 @@
 
 namespace Qv2ray::core::connection::generation::singbox
 {
+    static QString mapDomainStrategy(const QString &s)
+    {
+        // pass-through supported sing-box strategies
+        if (s == "prefer_ipv4" || s == "prefer_ipv6" || s == "ipv4_only" || s == "ipv6_only") return s;
+        return "prefer_ipv4";
+    }
+
     static QJsonObject mapInboundToSingBox(const QJsonObject &in)
     {
         QJsonObject sb;
@@ -10,7 +17,7 @@ namespace Qv2ray::core::connection::generation::singbox
         const auto listen = in.value("listen").toString("127.0.0.1");
         const auto port = in.value("port").toInt(0);
         sb["listen"] = listen;
-        sb["listen_port"] = port;
+        if (port > 0) sb["listen_port"] = port;
         if (proto == "http")
         {
             sb["type"] = "http";
@@ -23,21 +30,78 @@ namespace Qv2ray::core::connection::generation::singbox
         }
         else if (proto == "dokodemo-door")
         {
-            // best-effort map to tproxy; sing-box requires separate inbound type "tproxy"/"redirect".
+            // map to tproxy; enable auto_redirect for better compatibility
             sb["type"] = "tproxy";
             sb["network"] = "tcp,udp";
+            sb["auto_redirect"] = true;
+        }
+        else if (proto == "tun")
+        {
+            sb["type"] = "tun";
+            // minimal fields; advanced route address/rules need separate UI
+            sb["auto_route"] = true;
+            sb["stack"] = "system";
+        }
+        else if (proto == "redirect")
+        {
+            sb["type"] = "redirect";
+            sb["network"] = "tcp";
         }
         else
         {
-            // default to mixed for safety
             sb["type"] = "mixed";
         }
-        // simple sniff
         const auto sniff = in.value("sniffing").toObject();
         if (!sniff.isEmpty()) sb["sniff"] = sniff.value("enabled").toBool(false);
-        // tag
         sb["tag"] = in.value("tag").toString();
         return sb;
+    }
+
+    static void applyTLSAndTransport(QJsonObject &sb, const QJsonObject &stream)
+    {
+        if (stream.value("security").toString() == "tls")
+        {
+            QJsonObject tls; tls["enabled"] = true;
+            const auto tlsSettings = stream.value("tlsSettings").toObject();
+            const auto sni = tlsSettings.value("serverName").toString();
+            if (!sni.isEmpty()) tls["server_name"] = sni;
+            // utls
+            const auto fp = tlsSettings.value("fingerprint").toString();
+            if (!fp.isEmpty()) tls["utls"] = QJsonObject{ { "enabled", true }, { "fingerprint", fp } };
+            // reality
+            const auto reality = tlsSettings.value("reality").toObject();
+            if (!reality.isEmpty())
+            {
+                QJsonObject r; r["enabled"] = true; r["public_key"] = reality.value("public_key").toString();
+                const auto sid = reality.value("short_id").toString(); if (!sid.isEmpty()) r["short_id"] = sid;
+                tls["reality"] = r;
+            }
+            sb["tls"] = tls;
+        }
+        // Transport
+        const auto net = stream.value("network").toString();
+        if (net == "ws")
+        {
+            QJsonObject ws; ws["type"] = "ws";
+            const auto wso = stream.value("wsSettings").toObject();
+            const auto p = wso.value("path").toString();
+            if (!p.isEmpty()) ws["path"] = p;
+            const auto host = wso.value("headers").toObject().value("Host").toString();
+            if (!host.isEmpty()) ws["headers"] = QJsonObject{ { "Host", host } };
+            sb["transport"] = ws;
+        }
+        else if (net == "grpc")
+        {
+            QJsonObject g; g["type"] = "grpc";
+            const auto svc = stream.value("grpcSettings").toObject().value("serviceName").toString();
+            if (!svc.isEmpty()) g["service_name"] = svc;
+            sb["transport"] = g;
+        }
+        else if (net == "http")
+        {
+            QJsonObject h2; h2["type"] = "http";
+            sb["transport"] = h2;
+        }
     }
 
     static QJsonObject mapOutboundToSingBox(const QJsonObject &out)
@@ -97,65 +161,62 @@ namespace Qv2ray::core::connection::generation::singbox
         }
         else
         {
-            // fallback: try socks detour if exists
             sb["type"] = "direct";
         }
-        // TLS
-        if (stream.value("security").toString() == "tls")
-        {
-            QJsonObject tls; tls["enabled"] = true;
-            const auto sni = stream.value("tlsSettings").toObject().value("serverName").toString();
-            if (!sni.isEmpty()) tls["server_name"] = sni;
-            sb["tls"] = tls;
-        }
-        // Transport (map a few common ones)
-        const auto net = stream.value("network").toString();
-        if (net == "ws")
-        {
-            QJsonObject ws; ws["type"] = "ws";
-            const auto p = stream.value("wsSettings").toObject().value("path").toString();
-            if (!p.isEmpty()) ws["path"] = p;
-            const auto host = stream.value("wsSettings").toObject().value("headers").toObject().value("Host").toString();
-            if (!host.isEmpty()) ws["headers"] = QJsonObject{ { "Host", host } };
-            sb["transport"] = ws;
-        }
-        else if (net == "grpc")
-        {
-            QJsonObject g; g["type"] = "grpc";
-            const auto svc = stream.value("grpcSettings").toObject().value("serviceName").toString();
-            if (!svc.isEmpty()) g["service_name"] = svc;
-            sb["transport"] = g;
-        }
+        applyTLSAndTransport(sb, stream);
         return sb;
     }
 
-    static QJsonObject buildDNS()
+    static QJsonObject buildDNS(bool enableFakeIP)
     {
-        // sing-box 1.12.0 new DNS format example: udp 1.1.1.1 + system rule
         QJsonObject dns;
         QJsonArray servers;
         servers.append(QJsonObject{ { "type", "udp" }, { "server", "1.1.1.1" } });
         servers.append(QJsonObject{ { "type", "local" }, { "tag", "system" } });
+        if (enableFakeIP)
+        {
+            servers.append(QJsonObject{ { "type", "fakeip" },
+                                        { "tag", "fakeip" },
+                                        { "inet4_range", "198.18.0.0/15" },
+                                        { "inet6_range", "fc00::/18" } });
+        }
         dns["servers"] = servers;
         QJsonArray rules;
+        if (enableFakeIP)
+        {
+            rules.append(QJsonObject{ { "query_type", QJsonArray{ "A", "AAAA" } }, { "server", "fakeip" } });
+        }
         rules.append(QJsonObject{ { "server", "system" }, { "strategy", "prefer_ipv4" } });
         dns["rules"] = rules;
         dns["strategy"] = "prefer_ipv4";
         return dns;
     }
 
-    static QJsonObject buildRoute(const QString &proxyTag)
+    static QJsonObject buildRuleSets()
+    {
+        // Provide default remote rule_sets for CN; users may manage cache separately.
+        QJsonArray ruleSets;
+        ruleSets.append(QJsonObject{ { "tag", "geosite-cn" }, { "type", "remote" }, { "format", "binary" },
+                                     { "url", "https://raw.githubusercontent.com/SagerNet/sing-geosite/rule-set/geosite-cn.srs" },
+                                     { "download_detour", "direct" } });
+        ruleSets.append(QJsonObject{ { "tag", "geoip-cn" }, { "type", "remote" }, { "format", "binary" },
+                                     { "url", "https://raw.githubusercontent.com/SagerNet/sing-geoip/rule-set/geoip-cn.srs" },
+                                     { "download_detour", "direct" } });
+        QJsonObject route; route["rule_set"] = ruleSets; return route;
+    }
+
+    static QJsonObject buildRoute(const QString &finalTag, bool addRuleSets)
     {
         QJsonObject route;
-        // private ip direct
         QJsonArray rules;
         rules.append(QJsonObject{ { "ip_is_private", true }, { "outbound", "direct" } });
-        // final
         route["rules"] = rules;
-        route["final"] = proxyTag;
-        // placeholders for rule_sets (user can manage separately)
-        route["rule_set"] = QJsonArray{};
+        route["final"] = finalTag;
         route["auto_detect_interface"] = true;
+        if (addRuleSets)
+        {
+            route["rule_set"] = buildRuleSets().value("rule_set").toArray();
+        }
         return route;
     }
 
@@ -164,28 +225,56 @@ namespace Qv2ray::core::connection::generation::singbox
         CONFIGROOT sb;
         // log
         sb["log"] = QJsonObject{ { "level", "info" }, { "timestamp", true } };
-        // dns
-        sb["dns"] = buildDNS();
-        // inbounds: map each
+        // dns (enable fakeip if inbound sniffing requests it)
+        bool enableFakeIP = false;
+        for (const auto &inV : unified.value("inbounds").toArray())
+        {
+            const auto sniff = inV.toObject().value("sniffing").toObject();
+            const auto overrides = sniff.value("destOverride").toArray();
+            for (const auto &ov : overrides) if (ov.toString().contains("fakedns")) enableFakeIP = true;
+        }
+        sb["dns"] = buildDNS(enableFakeIP);
+        // inbounds
         QJsonArray sbIn;
         for (const auto &inV : unified.value("inbounds").toArray())
         {
             sbIn.append(mapInboundToSingBox(inV.toObject()));
         }
         sb["inbounds"] = sbIn;
-        // outbounds: first is proxy, append direct/block
+        // outbounds: map all proxies; build selector if multiple
         QJsonArray sbOut;
-        const auto firstOut = unified.value("outbounds").toArray().value(0).toObject();
-        const auto mapped = mapOutboundToSingBox(firstOut);
-        const auto proxyTag = mapped.value("tag").toString("proxy");
-        sbOut.append(mapped);
+        QStringList proxyTags;
+        for (const auto &outV : unified.value("outbounds").toArray())
+        {
+            const auto mapped = mapOutboundToSingBox(outV.toObject());
+            // skip duplicates of direct/block we add later
+            if (mapped.value("type").toString() != "direct" && mapped.value("type").toString() != "block")
+            {
+                proxyTags << mapped.value("tag").toString("proxy");
+            }
+            sbOut.append(mapped);
+        }
+        // selector/urltest if multiple proxies
+        QString finalTag = proxyTags.value(0, "proxy");
+        if (proxyTags.size() > 1)
+        {
+            QJsonObject selector; selector["type"] = "selector"; selector["tag"] = "selector";
+            QJsonArray items; for (const auto &t : proxyTags) items.append(t);
+            selector["outbounds"] = items;
+            sbOut.append(selector);
+            finalTag = "selector";
+        }
+        // essentials
         sbOut.append(QJsonObject{ { "type", "direct" }, { "tag", "direct" } });
         sbOut.append(QJsonObject{ { "type", "block" }, { "tag", "block" } });
-        // optional dns-out for hijack
-        // sbOut.append(QJsonObject{ { "type", "dns" }, { "tag", "dns-out" } });
         sb["outbounds"] = sbOut;
-        // route
-        sb["route"] = buildRoute(proxyTag);
+        // route with rule_sets
+        sb["route"] = buildRoute(finalTag, true);
+        // default_domain_resolver per 1.12 migration
+        QJsonObject defResolver; defResolver["server"] = "system";
+        defResolver["strategy"] = mapDomainStrategy(unified.value("routing").toObject().value("domainStrategy").toString());
+        sb["route"].toObject()["default_domain_resolver"] = defResolver; // ensure set
+        auto routeObj = sb.value("route").toObject(); routeObj["default_domain_resolver"] = defResolver; sb["route"] = routeObj;
         // experimental clash api
         const auto controller = QString("127.0.0.1:%1").arg(GlobalConfig.kernelConfig.statsPort);
         sb["experimental"] = QJsonObject{ { "clash_api", QJsonObject{ { "external_controller", controller } } } };
