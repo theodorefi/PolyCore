@@ -74,6 +74,8 @@ set(QV2RAY_BASE_SOURCES
     ${QV2RAY_BASEDIR_CORE}/connection/generation/filters.cpp
     ${QV2RAY_BASEDIR_CORE}/connection/generation/routing.cpp
     ${QV2RAY_BASEDIR_CORE}/connection/generation/misc.cpp
+    ${QV2RAY_BASEDIR_CORE}/connection/generation/singbox.cpp
+    ${QV2RAY_BASEDIR_CORE}/connection/generation/singbox.hpp
     ${QV2RAY_BASEDIR_CORE}/connection/Serialization.cpp
     ${QV2RAY_BASEDIR_CORE}/connection/Serialization.hpp
     ${QV2RAY_BASEDIR_CORE}/connection/serialization/ss.cpp

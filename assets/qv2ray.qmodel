@@ -12,7 +12,7 @@
          <uid>{1fbb5f76-94d9-4a40-9ebe-a30cbbf63220}</uid>
         </MElement>
        </base-MElement>
-       <name>Qv2ray</name>
+       <name>PolyCore</name>
        <children>
         <handles>
          <handles>
@@ -32,7 +32,7 @@
                       <uid>{5d758152-dfff-4d98-b146-4b6e36bdabce}</uid>
                      </MElement>
                     </base-MElement>
-                    <name>Qv2ray Project</name>
+                    <name>PolyCore Project</name>
                    </MObject>
                   </base-MObject>
                   <elements>

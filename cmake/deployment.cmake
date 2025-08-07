@@ -1,9 +1,9 @@
 # Packaging
 # Qv2ray Development and Research WorkGroup
-set(CPACK_PACKAGE_VENDOR "Qv2ray Development Group")
+set(CPACK_PACKAGE_VENDOR "PolyCore Development Group")
 set(CPACK_PACKAGE_VERSION ${QV2RAY_VERSION_STRING})
 set(CPACK_PACKAGE_DESCRIPTION "Cross-platform V2Ray Client written in Qt.")
-set(CPACK_PACKAGE_HOMEPAGE_URL "https://qv2ray.net")
+set(CPACK_PACKAGE_HOMEPAGE_URL "https://polycore.example")
 set(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}/assets/icons/qv2ray.ico")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
 
@@ -15,8 +15,8 @@ if(WIN32)
         set(CPACK_GENERATOR "NSIS")
         set(CPACK_NSIS_MUI_ICON "${CMAKE_SOURCE_DIR}/assets/icons/qv2ray.ico")
         set(CPACK_NSIS_MUI_UNIICON "${CMAKE_SOURCE_DIR}/assets/icons/qv2ray.ico")
-        set(CPACK_NSIS_DISPLAY_NAME "Qv2ray")
-        set(CPACK_NSIS_PACKAGE_NAME "Qv2ray")
+        set(CPACK_NSIS_DISPLAY_NAME "PolyCore")
+        set(CPACK_NSIS_PACKAGE_NAME "PolyCore")
         set(CPACK_NSIS_EXTRA_PREINSTALL_COMMANDS "
             ExecWait \\\"taskkill /f /im qv2ray.exe\\\"
             ExecWait \\\"taskkill /f /im v2ray.exe\\\"
