@@ -12,10 +12,10 @@ namespace Qv2ray::core::handler
     KernelInstanceHandler::KernelInstanceHandler(QObject *parent) : QObject(parent)
     {
         KernelInstance = this;
-        vCoreInstance = new V2RayKernelInstance(this);
-        connect(vCoreInstance, &V2RayKernelInstance::OnNewStatsDataArrived, this, &KernelInstanceHandler::OnV2RayStatsDataRcvd_p);
-        connect(vCoreInstance, &V2RayKernelInstance::OnProcessOutputReadyRead, this, &KernelInstanceHandler::OnV2RayKernelLog_p);
-        connect(vCoreInstance, &V2RayKernelInstance::OnProcessErrored, this, &KernelInstanceHandler::OnKernelCrashed_p);
+        vCoreInstance = new SingBoxKernelInstance(this);
+        connect(vCoreInstance, &SingBoxKernelInstance::OnNewStatsDataArrived, this, &KernelInstanceHandler::OnV2RayStatsDataRcvd_p);
+        connect(vCoreInstance, &SingBoxKernelInstance::OnProcessOutputReadyRead, this, &KernelInstanceHandler::OnV2RayKernelLog_p);
+        connect(vCoreInstance, &SingBoxKernelInstance::OnProcessErrored, this, &KernelInstanceHandler::OnKernelCrashed_p);
         //
         auto kernelList = PluginHost->UsablePlugins();
         for (const auto &internalName : kernelList)

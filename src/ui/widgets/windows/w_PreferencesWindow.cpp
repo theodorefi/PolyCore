@@ -4,7 +4,7 @@
 #include "components/translations/QvTranslator.hpp"
 #include "core/connection/ConnectionIO.hpp"
 #include "core/handler/ConfigHandler.hpp"
-#include "core/kernel/V2RayKernelInteractions.hpp"
+#include "core/kernel/SingBoxKernelInteractions.hpp"
 #include "core/settings/SettingsBackend.hpp"
 #include "src/plugin-interface/QvPluginInterface.hpp"
 #include "ui/common/autolaunch/QvAutoLaunch.hpp"
@@ -775,14 +775,14 @@ void PreferencesWindow::on_checkVCoreSettings_clicked()
 #endif
 #endif
 
-    if (const auto &&[result, msg] = V2RayKernelInstance::ValidateKernel(vcorePath, vAssetsPath); !result)
+    if (const auto &&[result, msg] = SingBoxKernelInstance::ValidateKernel(vcorePath); !result)
     {
-        QvMessageBoxWarn(this, tr("V2Ray Core Settings"), *msg);
+        QvMessageBoxWarn(this, tr("Kernel Settings"), *msg);
     }
 #if QV2RAY_FEATURE(kernel_check_output)
-    else if (!msg->toLower().contains("v2ray") && !msg->toLower().contains("xray"))
+    else if (!msg->toLower().contains("sing-box"))
     {
-        const auto content = tr("This does not seem like an output from V2Ray Core.") + NEWLINE +                         //
+        const auto content = tr("This does not seem like an output from sing-box.") + NEWLINE +                            //
                              tr("If you are looking for plugins settings, you should go to plugin settings.") + NEWLINE + //
                              tr("Output:") + NEWLINE +                                                                    //
                              NEWLINE + *msg;

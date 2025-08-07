@@ -96,8 +96,8 @@ set(QV2RAY_BASE_SOURCES
     ${QV2RAY_BASEDIR_CORE}/kernel/APIBackend.hpp
     ${QV2RAY_BASEDIR_CORE}/kernel/QvKernelABIChecker.cpp
     ${QV2RAY_BASEDIR_CORE}/kernel/QvKernelABIChecker.hpp
-    ${QV2RAY_BASEDIR_CORE}/kernel/V2RayKernelInteractions.cpp
-    ${QV2RAY_BASEDIR_CORE}/kernel/V2RayKernelInteractions.hpp
+    ${QV2RAY_BASEDIR_CORE}/kernel/SingBoxKernelInteractions.cpp
+    ${QV2RAY_BASEDIR_CORE}/kernel/SingBoxKernelInteractions.hpp
     #
     ${QV2RAY_BASEDIR_CORE}/settings/SettingsBackend.cpp
     ${QV2RAY_BASEDIR_CORE}/settings/SettingsBackend.hpp
