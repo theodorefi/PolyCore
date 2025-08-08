@@ -182,6 +182,54 @@
           </property>
          </widget>
         </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="label_urltestUrl">
+          <property name="text">
+           <string>URLTest URL</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QLineEdit" name="urltestUrlTxt">
+          <property name="placeholderText">
+           <string>http://www.gstatic.com/generate_204</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="label_urltestInterval">
+          <property name="text">
+           <string>URLTest Interval</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="QLineEdit" name="urltestIntervalTxt">
+          <property name="placeholderText">
+           <string>300s</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <widget class="QLabel" name="label_urltestTolerance">
+          <property name="text">
+           <string>URLTest Tolerance</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="1">
+         <widget class="QSpinBox" name="urltestToleranceTxt">
+          <property name="minimum">
+           <number>0</number>
+          </property>
+          <property name="maximum">
+           <number>10000</number>
+          </property>
+          <property name="value">
+           <number>50</number>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </item>
@@ -243,6 +291,8 @@
   <tabstop>useFPCB</tabstop>
  </tabstops>
  <resources/>
+  <include location="../../ui.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>

@@ -3,6 +3,7 @@
 #include "components/port/QvPortDetector.hpp"
 #include "core/connection/Generation.hpp"
 #include "utils/QvHelpers.hpp"
+#include "core/connection/generation/singbox.hpp"
 
 #define QV_MODULE_NAME "KernelHandler"
 
@@ -12,10 +13,10 @@ namespace Qv2ray::core::handler
     KernelInstanceHandler::KernelInstanceHandler(QObject *parent) : QObject(parent)
     {
         KernelInstance = this;
-        vCoreInstance = new V2RayKernelInstance(this);
-        connect(vCoreInstance, &V2RayKernelInstance::OnNewStatsDataArrived, this, &KernelInstanceHandler::OnV2RayStatsDataRcvd_p);
-        connect(vCoreInstance, &V2RayKernelInstance::OnProcessOutputReadyRead, this, &KernelInstanceHandler::OnV2RayKernelLog_p);
-        connect(vCoreInstance, &V2RayKernelInstance::OnProcessErrored, this, &KernelInstanceHandler::OnKernelCrashed_p);
+        vCoreInstance = new SingBoxKernelInstance(this);
+        connect(vCoreInstance, &SingBoxKernelInstance::OnNewStatsDataArrived, this, &KernelInstanceHandler::OnV2RayStatsDataRcvd_p);
+        connect(vCoreInstance, &SingBoxKernelInstance::OnProcessOutputReadyRead, this, &KernelInstanceHandler::OnV2RayKernelLog_p);
+        connect(vCoreInstance, &SingBoxKernelInstance::OnProcessErrored, this, &KernelInstanceHandler::OnKernelCrashed_p);
         //
         auto kernelList = PluginHost->UsablePlugins();
         for (const auto &internalName : kernelList)
@@ -171,12 +172,13 @@ namespace Qv2ray::core::handler
                 if (!hasAllKernelStarted)
                 {
                     StopConnection();
+                    PluginHost->SendEvent({ GetDisplayName(id.connectionId), inboundPorts, Events::Connectivity::Disconnected });
                     return tr("A plugin kernel failed to start. Please check the outbound settings.");
                 }
                 currentId = id;
-                //
-                // Also start V2Ray-core.
-                auto result = vCoreInstance->StartConnection(fullConfig);
+                // Also start sing-box with translated config
+                const auto sbConfig = GenerateSingBoxConfig(fullConfig);
+                auto result = vCoreInstance->StartConnection(sbConfig);
                 //
                 if (result.has_value())
                 {

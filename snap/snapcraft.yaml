@@ -1,4 +1,4 @@
-name: qv2ray
+name: polycore
 base: core22
 adopt-info: qv2ray
 icon: assets/icons/qv2ray.png
@@ -7,8 +7,8 @@ grade: stable
 confinement: strict
 
 apps:
-  qv2ray:
-    command: usr/bin/qv2ray
+  polycore:
+  command: usr/bin/polycore
     extensions:
       - kde-neon
     plugs:

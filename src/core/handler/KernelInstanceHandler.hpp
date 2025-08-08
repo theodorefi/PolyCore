@@ -1,7 +1,7 @@
 #pragma once
 #include "components/plugins/QvPluginHost.hpp"
 #include "core/CoreUtils.hpp"
-#include "core/kernel/V2RayKernelInteractions.hpp"
+#include "core/kernel/SingBoxKernelInteractions.hpp"
 
 #include <QObject>
 #include <optional>
@@ -86,7 +86,7 @@ namespace Qv2ray::core::handler
         // Since QMap does not support std::unique_ptr, we use std::map<>
         std::list<std::pair<QString, std::unique_ptr<PluginKernel>>> activeKernels;
         QMap<QString, ProtocolSettingsInfoObject> inboundInfo;
-        V2RayKernelInstance *vCoreInstance = nullptr;
+        SingBoxKernelInstance *vCoreInstance = nullptr;
         ConnectionGroupPair currentId = {};
     };
     inline const KernelInstanceHandler *KernelInstance;

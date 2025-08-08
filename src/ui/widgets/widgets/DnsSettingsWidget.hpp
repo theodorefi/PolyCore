@@ -3,6 +3,7 @@
 #include "base/Qv2rayBase.hpp"
 #include "ui/common/QvMessageBus.hpp"
 #include "ui_DnsSettingsWidget.h"
+#include "base/models/CoreObjectModels.hpp"
 
 namespace Qv2ray::ui::widgets
 {
@@ -19,6 +20,9 @@ class DnsSettingsWidget
     explicit DnsSettingsWidget(QWidget *parent = nullptr);
     void SetDNSObject(const DNSObject &dns, const FakeDNSObject &fakeDNS);
     std::pair<DNSObject, FakeDNSObject> GetDNSObject();
+    // New accessors for resolved/tailscale options
+    bool ResolvedEnabled() const { return enableResolved; }
+    bool TailscaleEnabled() const { return enableTailscale; }
     bool CheckIsValidDNS() const;
 
   private slots:
@@ -45,6 +49,8 @@ class DnsSettingsWidget
     void on_dnsDisableFallbackCB_stateChanged(int arg1);
 
     void on_dnsQueryStrategyCB_currentTextChanged(const QString &arg1);
+    void on_enableResolvedCB_stateChanged(int arg1);
+    void on_enableTailscaleDnsCB_stateChanged(int arg1);
 
   private:
     void updateColorScheme();
@@ -53,6 +59,8 @@ class DnsSettingsWidget
     QvMessageBusSlotDecl;
     DNSObject dns;
     FakeDNSObject fakeDNS;
+    bool enableResolved = false;
+    bool enableTailscale = false;
     // int currentServerIndex;
     //
     Qv2ray::ui::widgets::AutoCompleteTextEdit *domainListTxt;

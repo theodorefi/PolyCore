@@ -284,7 +284,7 @@ void ImportConfigWindow::on_beginImportBtn_clicked()
             bool ImportAsComplex = keepImportedInboundCheckBox->isChecked();
             const auto path = fileLineTxt->text();
 
-            if (const auto &result = V2RayKernelInstance::ValidateConfig(path); result)
+            if (const auto &result = SingBoxKernelInstance::ValidateConfig(path); result)
             {
                 QvMessageBoxWarn(this, tr("Import config file"), *result);
                 return;

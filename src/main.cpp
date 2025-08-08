@@ -206,13 +206,13 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationVersion(QV2RAY_VERSION_STRING);
 
 #ifdef QT_DEBUG
-    QCoreApplication::setApplicationName("qv2ray_debug");
+    QCoreApplication::setApplicationName("polycore_debug");
 #else
-    QCoreApplication::setApplicationName("qv2ray");
+    QCoreApplication::setApplicationName("polycore");
 #endif
 
 #ifdef QV2RAY_GUI
-    QApplication::setApplicationDisplayName("Qv2ray");
+    QApplication::setApplicationDisplayName("PolyCore");
 #endif
 
 #ifdef QT_DEBUG

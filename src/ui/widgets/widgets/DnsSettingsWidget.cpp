@@ -104,6 +104,9 @@ void DnsSettingsWidget::SetDNSObject(const DNSObject &_dns, const FakeDNSObject 
     dnsQueryStrategyCB->setCurrentText(dns.queryStrategy);
     dnsDisableFallbackCB->setChecked(dns.disableFallback);
     dnsDisableCacheCB->setChecked(dns.disableCache);
+    // init resolved/tailscale checkboxes
+    enableResolvedCB->setChecked(enableResolved);
+    enableTailscaleDnsCB->setChecked(enableTailscale);
 
     fakeDNSIPPool->setCurrentText(fakeDNS.ipPool);
     fakeDNSIPPoolSize->setValue(fakeDNS.poolSize);
@@ -315,4 +318,14 @@ void DnsSettingsWidget::on_dnsDisableFallbackCB_stateChanged(int arg1)
 void DnsSettingsWidget::on_dnsQueryStrategyCB_currentTextChanged(const QString &arg1)
 {
     dns.queryStrategy = arg1;
+}
+
+void DnsSettingsWidget::on_enableResolvedCB_stateChanged(int arg1)
+{
+    enableResolved = arg1 == Qt::Checked;
+}
+
+void DnsSettingsWidget::on_enableTailscaleDnsCB_stateChanged(int arg1)
+{
+    enableTailscale = arg1 == Qt::Checked;
 }

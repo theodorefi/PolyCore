@@ -15,7 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="0,1,0,0,0">
+    <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="0,1,0,0,0,0,0">
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
@@ -50,6 +50,20 @@ It cannot be a private address.</string>
       <widget class="QCheckBox" name="dnsDisableCacheCB">
        <property name="text">
         <string>Disable Cache</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="enableResolvedCB">
+       <property name="text">
+        <string>Enable systemd-resolved</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="enableTailscaleDnsCB">
+       <property name="text">
+        <string>Enable Tailscale DNS</string>
        </property>
       </widget>
      </item>

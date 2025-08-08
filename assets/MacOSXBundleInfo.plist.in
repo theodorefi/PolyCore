@@ -42,10 +42,10 @@
 			<key>CFBundleURLIconFile</key>
 			<string>Icon</string>
 			<key>CFBundleURLName</key>
-			<string>com.qv2ray.qv2ray</string>
+			<string>com.polycore.polycore</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>qv2ray</string>
+				<string>polycore</string>
 			</array>
 		</dict>
 	</array>
