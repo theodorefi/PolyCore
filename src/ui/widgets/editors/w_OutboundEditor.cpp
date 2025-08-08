@@ -104,6 +104,13 @@ OUTBOUND OutboundEditor::generateConnectionJson()
         QvMessageBoxWarn(this, tr("Unknown outbound type."),
                          tr("The specified outbound type is not supported, this may happen due to a plugin failure."));
     }
+    // Inject urltest settings when outboundType is urltest
+    if (outboundType == "urltest")
+    {
+        settings["url"] = urltestUrl;
+        settings["interval"] = urltestInterval;
+        settings["tolerance"] = urltestTolerance;
+    }
     auto root = GenerateOutboundEntry(tag, outboundType, settings, streaming, muxConfig);
     root[QV2RAY_USE_FPROXY_KEY] = useForwardProxy;
     return root;
@@ -117,6 +124,17 @@ void OutboundEditor::reloadGUI()
     muxConfig = originalConfig.contains("mux") ? originalConfig["mux"].toObject() : QJsonObject{};
     useForwardProxy = originalConfig[QV2RAY_USE_FPROXY_KEY].toBool(false);
     streamSettingsWidget->SetStreamObject(StreamSettingsObject::fromJson(originalConfig["streamSettings"].toObject()));
+    // urltest defaults if present
+    if (outboundType == "urltest")
+    {
+        const auto &settings = originalConfig["settings"].toObject();
+        urltestUrl = settings.value("url").toString(urltestUrl);
+        urltestInterval = settings.value("interval").toString(urltestInterval);
+        urltestTolerance = settings.value("tolerance").toInt(urltestTolerance);
+        if (auto urlEdit = findChild<QLineEdit*>("urltestUrlTxt")) urlEdit->setText(urltestUrl);
+        if (auto intervalEdit = findChild<QLineEdit*>("urltestIntervalTxt")) intervalEdit->setText(urltestInterval);
+        if (auto tolSpin = findChild<QSpinBox*>("urltestToleranceTxt")) tolSpin->setValue(urltestTolerance);
+    }
     //
     useFPCB->setChecked(useForwardProxy);
     muxEnabledCB->setChecked(muxConfig["enabled"].toBool());
@@ -200,3 +218,7 @@ void OutboundEditor::on_outBoundTypeCombo_currentIndexChanged(int)
     if (!hasForwardProxy)
         useFPCB->setToolTip(tr("Forward proxy has been disabled when using plugin outbound"));
 }
+
+void OutboundEditor::on_urltestUrlTxt_textEdited(const QString &arg1) { urltestUrl = arg1; }
+void OutboundEditor::on_urltestIntervalTxt_textEdited(const QString &arg1) { urltestInterval = arg1; }
+void OutboundEditor::on_urltestToleranceTxt_valueChanged(int arg1) { urltestTolerance = arg1; }

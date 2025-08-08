@@ -32,6 +32,10 @@ class OutboundEditor
     void on_portLineEdit_textEdited(const QString &arg1);
     void on_tagTxt_textEdited(const QString &arg1);
     void on_useFPCB_stateChanged(int arg1);
+    // urltest editor slots
+    void on_urltestUrlTxt_textEdited(const QString &arg1);
+    void on_urltestIntervalTxt_textEdited(const QString &arg1);
+    void on_urltestToleranceTxt_valueChanged(int arg1);
 
   private:
     QString tag;
@@ -50,4 +54,8 @@ class OutboundEditor
     StreamSettingsWidget *streamSettingsWidget;
     //
     QMap<QString, QvPluginEditor *> pluginWidgets;
+    // urltest fields
+    QString urltestUrl = "http://www.gstatic.com/generate_204";
+    QString urltestInterval = "300s";
+    int urltestTolerance = 50;
 };
