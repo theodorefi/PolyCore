@@ -147,7 +147,7 @@ void signalHandler(int signum)
         return;
     }
 #endif
-    std::cout << "Qv2ray: Interrupt signal (" << signum << ") received." << std::endl;
+    std::cout << "PolyCore: Interrupt signal (" << signum << ") received." << std::endl;
 
     if (signum == SIGTERM)
     {
@@ -165,7 +165,7 @@ void signalHandler(int signum)
         const auto filePath = QV2RAY_CONFIG_DIR + "bugreport/QvBugReport_" + QSTRN(system_clock::to_time_t(system_clock::now())) + ".stacktrace";
         StringToFile(msg, filePath);
         std::cout << "Backtrace saved in: " + filePath.toStdString() << std::endl;
-        const auto message = QObject::tr("Qv2ray has encountered an uncaught exception: ") + NEWLINE +              //
+        const auto message = QObject::tr("PolyCore has encountered an uncaught exception: ") + NEWLINE +              //
                              QObject::tr("Please report a bug via Github with the file located here: ") + NEWLINE + //
                              NEWLINE + filePath;
         BootstrapMessageBox("UNCAUGHT EXCEPTION", message);

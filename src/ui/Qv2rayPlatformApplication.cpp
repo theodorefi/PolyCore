@@ -25,7 +25,7 @@ QStringList Qv2rayPlatformApplication::CheckPrerequisites()
         const auto osslCurVersion = QSslSocket::sslLibraryVersionString();
         LOG("Current OpenSSL version: " + osslCurVersion);
         LOG("Required OpenSSL version: " + osslReqVersion);
-        errors << "Qv2ray cannot run without OpenSSL.";
+        errors << "PolyCore cannot run without OpenSSL.";
         errors << "This is usually caused by using the wrong version of OpenSSL";
         errors << "Required=" + osslReqVersion + "Current=" + osslCurVersion;
     }
@@ -42,7 +42,7 @@ bool Qv2rayPlatformApplication::Initialize()
         LOG("Command line:" QVLOG_A(errorMessage));
         if (!canContinue)
         {
-            LOG("Fatal, Qv2ray cannot continue.");
+            LOG("Fatal, PolyCore cannot continue.");
             return false;
         }
         else
@@ -55,7 +55,7 @@ bool Qv2rayPlatformApplication::Initialize()
     const auto appPath = QDir::toNativeSeparators(applicationFilePath());
     const auto regPath = "HKEY_CURRENT_USER\\Software\\Classes\\" + QV2RAY_URL_SCHEME;
     QSettings reg(regPath, QSettings::NativeFormat);
-    reg.setValue("Default", "Qv2ray");
+    reg.setValue("Default", "PolyCore");
     reg.setValue("URL Protocol", "");
     reg.beginGroup("DefaultIcon");
     reg.setValue("Default", QString("%1,1").arg(appPath));
@@ -186,7 +186,7 @@ bool Qv2rayPlatformApplication::parseCommandLine(QString *errorMessage, bool *ca
     QCommandLineOption reconnectOption("reconnect", QObject::tr("Reconnect last connection"));
     QCommandLineOption exitOption("exit", QObject::tr("Exit Qv2ray"));
     //
-    parser.setApplicationDescription(QObject::tr("Qv2ray - A cross-platform Qt frontend for V2Ray."));
+    parser.setApplicationDescription(QObject::tr("PolyCore - A cross-platform Qt frontend for V2Ray."));
     parser.setSingleDashWordOptionMode(QCommandLineParser::ParseAsLongOptions);
     //
     parser.addOption(noAPIOption);

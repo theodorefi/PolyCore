@@ -201,5 +201,5 @@ MessageOpt Qv2rayWidgetApplication::MessageBoxAsk(QWidget *parent, const QString
 
 void Qv2rayWidgetApplication::ShowTrayMessage(const QString &m, int msecs)
 {
-    hTray->showMessage("Qv2ray", m, QIcon(":/assets/icons/qv2ray.png"), msecs);
+    hTray->showMessage("PolyCore", m, QIcon(":/assets/icons/qv2ray.png"), msecs);
 }
