@@ -180,6 +180,11 @@ namespace Qv2ray::core::connection::generation::singbox
         servers.append(QJsonObject{ { "type", "local" }, { "tag", "system" } });
         // add minimal resolved server for systemd-resolved integrations
         servers.append(QJsonObject{ { "type", "resolved" }, { "tag", "resolved" } });
+        // optional tailscale server when env QV_TAILSCALE_DNS=1
+        if (qEnvironmentVariableIsSet("QV_TAILSCALE_DNS") && qgetenv("QV_TAILSCALE_DNS") == "1")
+        {
+            servers.append(QJsonObject{ { "type", "tailscale" }, { "tag", "tailscale" } });
+        }
         if (enableFakeIP)
         {
             servers.append(QJsonObject{ { "type", "fakeip" }, { "tag", "fakeip" }, { "inet4_range", "198.18.0.0/15" }, { "inet6_range", "fc00::/18" } });
@@ -240,6 +245,11 @@ namespace Qv2ray::core::connection::generation::singbox
         sb["dns"] = buildDNS(enableFakeIP);
         // minimal resolved service enablement
         sb["service"] = QJsonObject{ { "resolved", QJsonObject{} } };
+        // if tailscale env flag set, enable service.tailscale too
+        if (qEnvironmentVariableIsSet("QV_TAILSCALE_DNS") && qgetenv("QV_TAILSCALE_DNS") == "1")
+        {
+            auto svc = sb.value("service").toObject(); svc["tailscale"] = QJsonObject{}; sb["service"] = svc;
+        }
         // inbounds
         QJsonArray sbIn;
         for (const auto &inV : unified.value("inbounds").toArray())
