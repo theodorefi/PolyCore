@@ -18,29 +18,29 @@ if(WIN32)
         set(CPACK_NSIS_DISPLAY_NAME "PolyCore")
         set(CPACK_NSIS_PACKAGE_NAME "PolyCore")
         set(CPACK_NSIS_EXTRA_PREINSTALL_COMMANDS "
-            ExecWait \\\"taskkill /f /im qv2ray.exe\\\"
-            ExecWait \\\"taskkill /f /im v2ray.exe\\\"
-            ExecWait \\\"taskkill /f /im wv2ray.exe\\\"
-            ExecWait \\\"taskkill /f /im xray.exe\\\"
+            ExecWait \"taskkill /f /im polycore.exe\"
+            ExecWait \"taskkill /f /im v2ray.exe\"
+            ExecWait \"taskkill /f /im wv2ray.exe\"
+            ExecWait \"taskkill /f /im xray.exe\"
             ")
         set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "
-            CreateShortCut \\\"$DESKTOP\\\\Qv2ray.lnk\\\" \\\"$INSTDIR\\\\qv2ray.exe\\\"
-            CreateDirectory \\\"$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\Qv2ray\\\"
-            CreateShortCut \\\"$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\Qv2ray\\\\Qv2ray.lnk\\\" \\\"$INSTDIR\\\\qv2ray.exe\\\"
-            WriteRegStr HKLM \\\"Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\qv2ray\\\" \\\"DisplayIcon\\\" \\\"$INSTDIR\\\\qv2ray.exe\\\"
-            WriteRegStr HKLM \\\"Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\qv2ray\\\" \\\"HelpLink\\\" \\\"https://qv2ray.net\\\"
-            WriteRegStr HKLM \\\"Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\qv2ray\\\" \\\"InstallLocation\\\" \\\"$INSTDIR\\\"
-            WriteRegStr HKLM \\\"Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\qv2ray\\\" \\\"URLUpdateInfo\\\" \\\"https://github.com/Qv2ray/Qv2ray/releases\\\"
-            WriteRegStr HKLM \\\"Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\qv2ray\\\" \\\"URLInfoAbout\\\" \\\"https://github.com/Qv2ray/Qv2ray\\\"
+            CreateShortCut \"$DESKTOP\\PolyCore.lnk\" \"$INSTDIR\\polycore.exe\"
+            CreateDirectory \"$SMPROGRAMS\\$STARTMENU_FOLDER\\PolyCore\"
+            CreateShortCut \"$SMPROGRAMS\\$STARTMENU_FOLDER\\PolyCore\\PolyCore.lnk\" \"$INSTDIR\\polycore.exe\"
+            WriteRegStr HKLM \"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\polycore\" \"DisplayIcon\" \"$INSTDIR\\polycore.exe\"
+            WriteRegStr HKLM \"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\polycore\" \"HelpLink\" \"https://polycore.example\"
+            WriteRegStr HKLM \"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\polycore\" \"InstallLocation\" \"$INSTDIR\"
+            WriteRegStr HKLM \"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\polycore\" \"URLUpdateInfo\" \"https://github.com/polycore/polycore/releases\"
+            WriteRegStr HKLM \"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\polycore\" \"URLInfoAbout\" \"https://github.com/polycore/polycore\"
             ")
         set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "
-            ExecWait \\\"taskkill /f /im qv2ray.exe\\\"
-            Delete \\\"$DESKTOP\\\\Qv2ray.lnk\\\"
-            Delete \\\"$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\Qv2ray\\\\Qv2ray.lnk\\\"
-            RMDir \\\"$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\Qv2ray\\\"
-            DeleteRegKey HKLM \\\"Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\qv2ray\\\"
+            ExecWait \"taskkill /f /im polycore.exe\"
+            Delete \"$DESKTOP\\PolyCore.lnk\"
+            Delete \"$SMPROGRAMS\\$STARTMENU_FOLDER\\PolyCore\\PolyCore.lnk\"
+            RMDir \"$SMPROGRAMS\\$STARTMENU_FOLDER\\PolyCore\"
+            DeleteRegKey HKLM \"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\polycore\"
             ")
-        set(CPACK_PACKAGE_INSTALL_DIRECTORY "qv2ray")
+        set(CPACK_PACKAGE_INSTALL_DIRECTORY "polycore")
     endif()
 endif()
 

@@ -65,9 +65,9 @@ namespace Qv2ray::core::connection::generation::singbox
             const auto tlsSettings = stream.value("tlsSettings").toObject();
             const auto sni = tlsSettings.value("serverName").toString();
             if (!sni.isEmpty()) tls["server_name"] = sni;
-            // utls
-            const auto fp = tlsSettings.value("fingerprint").toString();
-            if (!fp.isEmpty()) tls["utls"] = QJsonObject{ { "enabled", true }, { "fingerprint", fp } };
+            // utls default to chrome if unspecified
+            const auto fp = tlsSettings.value("fingerprint").toString("chrome");
+            tls["utls"] = QJsonObject{ { "enabled", true }, { "fingerprint", fp } };
             // reality
             const auto reality = tlsSettings.value("reality").toObject();
             if (!reality.isEmpty())
@@ -75,6 +75,9 @@ namespace Qv2ray::core::connection::generation::singbox
                 QJsonObject r; r["enabled"] = true; r["public_key"] = reality.value("public_key").toString();
                 const auto sid = reality.value("short_id").toString(); if (!sid.isEmpty()) r["short_id"] = sid;
                 tls["reality"] = r;
+                // vision flow default for VLESS
+                if (sb.value("type").toString() == "vless" && sb.value("flow").toString().isEmpty())
+                    sb["flow"] = "xtls-rprx-vision";
             }
             sb["tls"] = tls;
         }
@@ -164,6 +167,8 @@ namespace Qv2ray::core::connection::generation::singbox
             sb["type"] = "direct";
         }
         applyTLSAndTransport(sb, stream);
+        // per-outbound domain_resolver (1.12 推荐)
+        sb["domain_resolver"] = QJsonObject{ { "server", "system" }, { "strategy", mapDomainStrategy("") } };
         return sb;
     }
 
@@ -173,12 +178,11 @@ namespace Qv2ray::core::connection::generation::singbox
         QJsonArray servers;
         servers.append(QJsonObject{ { "type", "udp" }, { "server", "1.1.1.1" } });
         servers.append(QJsonObject{ { "type", "local" }, { "tag", "system" } });
+        // add minimal resolved server for systemd-resolved integrations
+        servers.append(QJsonObject{ { "type", "resolved" }, { "tag", "resolved" } });
         if (enableFakeIP)
         {
-            servers.append(QJsonObject{ { "type", "fakeip" },
-                                        { "tag", "fakeip" },
-                                        { "inet4_range", "198.18.0.0/15" },
-                                        { "inet6_range", "fc00::/18" } });
+            servers.append(QJsonObject{ { "type", "fakeip" }, { "tag", "fakeip" }, { "inet4_range", "198.18.0.0/15" }, { "inet6_range", "fc00::/18" } });
         }
         dns["servers"] = servers;
         QJsonArray rules;
@@ -234,6 +238,8 @@ namespace Qv2ray::core::connection::generation::singbox
             for (const auto &ov : overrides) if (ov.toString().contains("fakedns")) enableFakeIP = true;
         }
         sb["dns"] = buildDNS(enableFakeIP);
+        // minimal resolved service enablement
+        sb["service"] = QJsonObject{ { "resolved", QJsonObject{} } };
         // inbounds
         QJsonArray sbIn;
         for (const auto &inV : unified.value("inbounds").toArray())
@@ -241,28 +247,21 @@ namespace Qv2ray::core::connection::generation::singbox
             sbIn.append(mapInboundToSingBox(inV.toObject()));
         }
         sb["inbounds"] = sbIn;
-        // outbounds: map all proxies; build selector if multiple
-        QJsonArray sbOut;
-        QStringList proxyTags;
+        // outbounds & aggregation
+        QJsonArray sbOut; QStringList proxyTags;
         for (const auto &outV : unified.value("outbounds").toArray())
         {
-            const auto mapped = mapOutboundToSingBox(outV.toObject());
-            // skip duplicates of direct/block we add later
-            if (mapped.value("type").toString() != "direct" && mapped.value("type").toString() != "block")
-            {
-                proxyTags << mapped.value("tag").toString("proxy");
-            }
+            auto mapped = mapOutboundToSingBox(outV.toObject());
+            if (mapped.value("type").toString() != "direct" && mapped.value("type").toString() != "block") proxyTags << mapped.value("tag").toString("proxy");
             sbOut.append(mapped);
         }
-        // selector/urltest if multiple proxies
         QString finalTag = proxyTags.value(0, "proxy");
         if (proxyTags.size() > 1)
         {
-            QJsonObject selector; selector["type"] = "selector"; selector["tag"] = "selector";
-            QJsonArray items; for (const auto &t : proxyTags) items.append(t);
-            selector["outbounds"] = items;
-            sbOut.append(selector);
-            finalTag = "selector";
+            QJsonObject urltest; urltest["type"] = "urltest"; urltest["tag"] = "auto";
+            QJsonArray items; for (const auto &t : proxyTags) items.append(t); urltest["outbounds"] = items;
+            urltest["url"] = "http://www.gstatic.com/generate_204"; urltest["interval"] = "300s"; urltest["tolerance"] = 50;
+            sbOut.append(urltest); finalTag = "auto";
         }
         // essentials
         sbOut.append(QJsonObject{ { "type", "direct" }, { "tag", "direct" } });
@@ -273,11 +272,12 @@ namespace Qv2ray::core::connection::generation::singbox
         // default_domain_resolver per 1.12 migration
         QJsonObject defResolver; defResolver["server"] = "system";
         defResolver["strategy"] = mapDomainStrategy(unified.value("routing").toObject().value("domainStrategy").toString());
-        sb["route"].toObject()["default_domain_resolver"] = defResolver; // ensure set
         auto routeObj = sb.value("route").toObject(); routeObj["default_domain_resolver"] = defResolver; sb["route"] = routeObj;
-        // experimental clash api
+        // experimental (clash_api + cache_file)
         const auto controller = QString("127.0.0.1:%1").arg(GlobalConfig.kernelConfig.statsPort);
-        sb["experimental"] = QJsonObject{ { "clash_api", QJsonObject{ { "external_controller", controller } } } };
+        QJsonObject experimental; experimental["clash_api"] = QJsonObject{ { "external_controller", controller } };
+        experimental["cache_file"] = QJsonObject{ { "enabled", true }, { "path", QV2RAY_CONFIG_DIR + "cache.db" }, { "store_fakeip", enableFakeIP } };
+        sb["experimental"] = experimental;
         return sb;
     }
 } // namespace Qv2ray::core::connection::generation::singbox
